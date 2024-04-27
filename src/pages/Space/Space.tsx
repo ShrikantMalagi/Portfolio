@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { SphereEnv } from "../../components";
+import { Portal, SpaceShip, SphereEnv } from "../../components";
 import { EffectComposer, HueSaturation } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { Environment, OrbitControls, PerspectiveCamera } from "@react-three/drei";
@@ -15,7 +15,8 @@ function Space() {
           files={"assets/textures/HDR_blue_nebulae-1.hdr"}
         />
         <PerspectiveCamera makeDefault position={[0, 10, 10]} />
-        <OrbitControls target={[0,0,0]}/>
+        <SpaceShip/>
+        <Portal/>
         <directionalLight
           castShadow
           color={"#FFFFF"}
