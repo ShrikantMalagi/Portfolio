@@ -1,0 +1,1 @@
+export const asteroids_number = 20; 
