@@ -32,6 +32,10 @@ function SpaceShip() {
       controls[e.key.toLowerCase()] = false;
     });
 
+    window.addEventListener("onClick", (e) => {
+      
+    });
+
     updatePlaneAxis(x, y, z, planePosition, camera);
     const rotMatrix = new Matrix4().makeBasis(x, y, z);
 

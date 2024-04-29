@@ -1,11 +1,23 @@
 import { Canvas } from "@react-three/fiber";
-import { Portal, SpaceShip, SphereEnv } from "../../components";
+import {
+  Asteroid,
+  Bullet,
+  Portal,
+  SpaceShip,
+  SphereEnv,
+} from "../../components";
 import { EffectComposer, HueSaturation } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
-import { Environment, OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { Environment, PerspectiveCamera } from "@react-three/drei";
 import { Suspense } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../state/store/types";
+import { asteroids_number } from "./constants";
+import { MathUtils, Vector3 } from "three";
 
 function Space() {
+  const bullets = useSelector((state: RootState) => state.bullets);
+  const asteroids = Array.from({ length: asteroids_number }, (_, index) => index);
   return (
     <Canvas shadows>
       <Suspense fallback={null}>
@@ -15,8 +27,27 @@ function Space() {
           files={"assets/textures/HDR_blue_nebulae-1.hdr"}
         />
         <PerspectiveCamera makeDefault position={[0, 10, 10]} />
-        <SpaceShip/>
-        <Portal/>
+        <SpaceShip />
+        <Portal />
+        {bullets.length > 0 &&
+          bullets.map((bullet) => (
+            <Bullet
+              angle={bullet.angle}
+              position={bullet.position}
+              onHit={undefined}
+            />
+          ))}
+        {asteroids.map( asteroid => 
+          <Asteroid
+            position={
+              new Vector3(
+                MathUtils.randFloat(-15, 15),
+                MathUtils.randFloat(-15, 15),
+                MathUtils.randFloat(-15, 15)
+              )
+            }
+          />
+        )}
         <directionalLight
           castShadow
           color={"#FFFFF"}
@@ -35,9 +66,9 @@ function Space() {
 
         <EffectComposer>
           <HueSaturation
-            blendFunction={BlendFunction.NORMAL} // blend mode
-            hue={-0.15} // hue in radians
-            saturation={0.1} // saturation in radians
+            blendFunction={BlendFunction.NORMAL}
+            hue={-0.15}
+            saturation={0.1}
           />
         </EffectComposer>
       </Suspense>
