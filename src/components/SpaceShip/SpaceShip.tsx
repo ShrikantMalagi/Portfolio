@@ -10,6 +10,8 @@ import {
 } from "three";
 import { useGLTF } from "@react-three/drei";
 import { useRef } from "react";
+import { useDispatch } from "react-redux";
+import { addBullet } from "../../state/slices/Bullets";
 
 const x = new Vector3(1, 0, 0);
 const y = new Vector3(0, 1, 0);
@@ -21,6 +23,7 @@ const delayedQuaternion = new Quaternion();
 
 function SpaceShip() {
   const groupRef = useRef<Group>(null);
+  const dispatch = useDispatch();
 
   const { nodes, materials } = useGLTF("assets/models/Challenger.gltf");
 
@@ -32,8 +35,10 @@ function SpaceShip() {
       controls[e.key.toLowerCase()] = false;
     });
 
-    window.addEventListener("onClick", (e) => {
-      
+    window.addEventListener("click", (e) => {
+       dispatch(
+        addBullet({id:"",position:groupRef.current?.position,angle: groupRef.current?.rotation})
+       );
     });
 
     updatePlaneAxis(x, y, z, planePosition, camera);

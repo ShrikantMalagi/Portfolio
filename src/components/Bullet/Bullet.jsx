@@ -1,8 +1,9 @@
+import { useFrame } from "@react-three/fiber";
 import { RigidBody, vec3 } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
-import { MeshBasicMaterial } from "three";
+import { MeshBasicMaterial, Vector3 } from "three";
 
-const BULLET_SPEED = 20;
+const BULLET_SPEED = 2;
 
 const bulletMaterial = new MeshBasicMaterial({
   color: "hotpink",
@@ -11,26 +12,31 @@ const bulletMaterial = new MeshBasicMaterial({
 
 bulletMaterial.color.multiplyScalar(42);
 
- const Bullet = ({ angle, position, onHit }) => {
+const Bullet = ({ angle, position, onHit }) => {
   const rigidbody = useRef();
+  const groupRef = useRef();
+  useFrame(() => {
+    console.log("bullet", rigidbody.current.position);
+  });
 
-  useEffect(() => {
-    const velocity = {
-      x: Math.sin(angle) * BULLET_SPEED,
-      y: 0,
-      z: Math.cos(angle) * BULLET_SPEED,
-    };
+  useFrame(() => {
+    console.log(groupRef.current);
+    const velocity = new Vector3(
+      groupRef.current.position.x + angle.x * BULLET_SPEED+ BULLET_SPEED,
+      groupRef.current.position.y + angle.y * BULLET_SPEED+ BULLET_SPEED,
+      groupRef.current.position.z + angle.z * BULLET_SPEED+ + BULLET_SPEED
+    );
 
     rigidbody.current.setLinvel(velocity, true);
-  }, [angle]);
+  });
 
   return (
-    <group position={[position.x, position.y, position.z]} rotation-y={angle}>
-      {/* <group
-        position-x={WEAPON_OFFSET.x}
-        position-y={WEAPON_OFFSET.y}
-        position-z={WEAPON_OFFSET.z}
-      > */}
+    <group
+      ref={groupRef}
+      position={[position.x, position.y, position.z]}
+      rotation={angle}
+    >
+      <group position-x={0.5} position-y={0.5} position-z={0.5}>
         <RigidBody
           ref={rigidbody}
           gravityScale={0}
@@ -46,11 +52,11 @@ bulletMaterial.color.multiplyScalar(42);
             damage: 10,
           }}
         >
-          <mesh position-z={0.25} material={bulletMaterial} castShadow>
+          <mesh material={bulletMaterial} castShadow>
             <boxGeometry args={[0.05, 0.05, 0.5]} />
           </mesh>
         </RigidBody>
-      {/* </group> */}
+      </group>
     </group>
   );
 };

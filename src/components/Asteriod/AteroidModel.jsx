@@ -6,7 +6,7 @@ import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 
 export function AsteroidModel(props) {
-  const { nodes, materials } = useGLTF('/assets/models/Asterid_explodable.glb')
+  const { nodes, materials } = useGLTF('/assets/models/asteroid_explodable.glb')
   useFrame((_state,delta,_xFrame)=>{
     console.log(delta);
   })
