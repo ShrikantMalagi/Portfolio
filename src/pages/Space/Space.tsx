@@ -13,7 +13,8 @@ import { Suspense } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../state/store/types";
 import { asteroids_number } from "./constants";
-import { MathUtils, Vector3 } from "three";
+import { Euler, MathUtils, Vector3 } from "three";
+import { Physics } from "@react-three/rapier";
 
 function Space() {
   const bullets = useSelector((state: RootState) => state.bullets);
@@ -29,14 +30,21 @@ function Space() {
         <PerspectiveCamera makeDefault position={[0, 10, 10]} />
         <SpaceShip />
         <Portal />
-        {bullets.length > 0 &&
-          bullets.map((bullet) => (
+        <Physics>
+        <Bullet
+              angle={new Euler(0,0,0)}
+              position={new Vector3(0,0,0)}
+              onHit={undefined}
+            />
+        {
+          bullets.map((bullet) => 
             <Bullet
               angle={bullet.angle}
               position={bullet.position}
               onHit={undefined}
             />
-          ))}
+          )
+          }
         {asteroids.map( asteroid => 
           <Asteroid
             position={
@@ -48,6 +56,7 @@ function Space() {
             }
           />
         )}
+        </Physics>
         <directionalLight
           castShadow
           color={"#FFFFF"}
