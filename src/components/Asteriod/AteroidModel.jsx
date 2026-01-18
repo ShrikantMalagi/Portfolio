@@ -8,7 +8,6 @@ import { useFrame } from '@react-three/fiber'
 export function AsteroidModel(props) {
   const { nodes, materials } = useGLTF('/assets/models/asteroid_explodable.glb')
   useFrame((_state,delta,_xFrame)=>{
-    console.log(delta);
   })
   return (
     <group {...props} position={props.position} dispose={null} scale={0.5}>

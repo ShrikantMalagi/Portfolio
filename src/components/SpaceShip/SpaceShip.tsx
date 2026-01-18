@@ -4,14 +4,19 @@ import {
   BufferGeometry,
   Group,
   Matrix4,
+  Mesh,
   NormalBufferAttributes,
   Quaternion,
   Vector3,
 } from "three";
 import { useGLTF } from "@react-three/drei";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { addBullet } from "../../state/slices/Bullets";
+import { nanoid } from "@reduxjs/toolkit";
+import { RigidBody } from "@react-three/rapier";
+
+const Bullet_Offset = 0.02;
 
 const x = new Vector3(1, 0, 0);
 const y = new Vector3(0, 1, 0);
@@ -23,9 +28,39 @@ const delayedQuaternion = new Quaternion();
 
 function SpaceShip() {
   const groupRef = useRef<Group>(null);
+  const spaceShipRef = useRef(null);
+  const meshRef = useRef<Mesh>(null);
   const dispatch = useDispatch();
 
   const { nodes, materials } = useGLTF("assets/models/Challenger.gltf");
+  const model = useGLTF("assets/models/Challenger.gltf");
+
+  useEffect(() => {
+    window.addEventListener("click", (e) => {
+      if (meshRef.current) {
+        let target1:any;
+        let target2:any;
+        // spaceShipRef?.current.getVertexPosition(0,target1);
+        // console.log("position", target1);
+        spaceShipRef?.current.getWorldDirection(target2);
+        console.log('direction',target2);
+        dispatch(
+          addBullet({
+            id: nanoid(4),
+            position: new Vector3(
+              meshRef.current.position.x +
+              meshRef.current.rotation.x * Bullet_Offset,
+              meshRef.current.position.y +
+              meshRef.current.rotation.y * Bullet_Offset,
+              meshRef.current.position.z +
+              meshRef.current.rotation.z * Bullet_Offset
+            ),
+            angle: groupRef.current?.rotation,
+          })
+        );
+      }
+    });
+  }, [dispatch]);
 
   useFrame(({ camera }) => {
     window.addEventListener("keydown", (e) => {
@@ -33,12 +68,6 @@ function SpaceShip() {
     });
     window.addEventListener("keyup", (e) => {
       controls[e.key.toLowerCase()] = false;
-    });
-
-    window.addEventListener("click", (e) => {
-       dispatch(
-        addBullet({id:"",position:groupRef.current?.position,angle: groupRef.current?.rotation})
-       );
     });
 
     updatePlaneAxis(x, y, z, planePosition, camera);
@@ -90,19 +119,24 @@ function SpaceShip() {
   });
 
   return (
-    <group ref={groupRef}>
-      <group dispose={null} scale={0.01} rotation-y={Math.PI}>
-        <mesh
-          material={materials.Texture}
-          geometry={
-            "geometry" in nodes.Challenger
-              ? (nodes.Challenger
-                  ?.geometry as BufferGeometry<NormalBufferAttributes>)
-              : undefined
-          }
-        />
+    <>
+      <group ref={groupRef}>
+        <group dispose={null} scale={0.01} rotation-y={Math.PI}>
+          <RigidBody ref={spaceShipRef} gravityScale={0}>
+            <mesh
+              ref={meshRef}
+              material={materials.Texture}
+              geometry={
+                "geometry" in nodes.Challenger
+                  ? (nodes.Challenger
+                      ?.geometry as BufferGeometry<NormalBufferAttributes>)
+                  : undefined
+              }
+            />
+          </RigidBody>
+        </group>
       </group>
-    </group>
+    </>
   );
 }
 

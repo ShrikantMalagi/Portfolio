@@ -13,7 +13,7 @@ import { Suspense } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../state/store/types";
 import { asteroids_number } from "./constants";
-import { Euler, MathUtils, Vector3 } from "three";
+import { MathUtils, Vector3 } from "three";
 import { Physics } from "@react-three/rapier";
 
 function Space() {
@@ -28,14 +28,9 @@ function Space() {
           files={"assets/textures/HDR_blue_nebulae-1.hdr"}
         />
         <PerspectiveCamera makeDefault position={[0, 10, 10]} />
-        <SpaceShip />
         <Portal />
         <Physics>
-        <Bullet
-              angle={new Euler(0,0,0)}
-              position={new Vector3(0,0,0)}
-              onHit={undefined}
-            />
+        <SpaceShip />
         {
           bullets.map((bullet) => 
             <Bullet

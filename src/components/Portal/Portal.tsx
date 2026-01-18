@@ -1,4 +1,3 @@
-import { LinearEncoding } from "@react-three/drei/helpers/deprecated";
 import { useFrame } from "@react-three/fiber";
 import { DoubleSide, Euler, Scene, TextureLoader, Vector3, WebGLRenderTarget} from "three";
 

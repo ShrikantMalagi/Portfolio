@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { RigidBody, vec3 } from "@react-three/rapier";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { MeshBasicMaterial, Vector3 } from "three";
 
 const BULLET_SPEED = 2;
@@ -16,15 +16,11 @@ const Bullet = ({ angle, position, onHit }) => {
   const rigidbody = useRef();
   const groupRef = useRef();
   useFrame(() => {
-    console.log("bullet", rigidbody.current.position);
-  });
 
-  useFrame(() => {
-    console.log(groupRef.current);
     const velocity = new Vector3(
-      groupRef.current.position.x + angle.x * BULLET_SPEED+ BULLET_SPEED,
-      groupRef.current.position.y + angle.y * BULLET_SPEED+ BULLET_SPEED,
-      groupRef.current.position.z + angle.z * BULLET_SPEED+ + BULLET_SPEED
+      groupRef.current.position.x + angle.x * BULLET_SPEED,
+      groupRef.current.position.y + angle.y * BULLET_SPEED,
+      groupRef.current.position.z + angle.z * BULLET_SPEED
     );
 
     rigidbody.current.setLinvel(velocity, true);
