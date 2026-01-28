@@ -1,9 +1,12 @@
 import { useFrame } from "@react-three/fiber";
-import { RigidBody, vec3 } from "@react-three/rapier";
-import { useEffect, useRef } from "react";
+import { RigidBody } from "@react-three/rapier";
+import { useMemo, useRef } from "react";
 import { MeshBasicMaterial, Vector3 } from "three";
+import { bulletCollisionGroups } from "../physics/collisionGroups";
 
 const BULLET_SPEED = 2;
+const MAX_BULLET_DISTANCE = 60;
+const MAX_BULLET_LIFETIME = 4;
 
 const bulletMaterial = new MeshBasicMaterial({
   color: "hotpink",
@@ -12,52 +15,72 @@ const bulletMaterial = new MeshBasicMaterial({
 
 bulletMaterial.color.multiplyScalar(42);
 
-const Bullet = ({ angle, position, onHit }) => {
+const Bullet = ({ id, direction, position, rotation, onHit, onExpire }) => {
   const rigidbody = useRef();
-  const groupRef = useRef();
-  useFrame(() => {
-    console.log("bullet", rigidbody.current.position);
-  });
+  const directionVector = useMemo(
+    () => new Vector3().fromArray(direction).normalize(),
+    [direction]
+  );
+  const velocity = useMemo(() => new Vector3(), []);
+  const startPosition = useMemo(() => new Vector3().fromArray(position), [position]);
+  const currentPosition = useMemo(() => new Vector3(), []);
+  const lifetime = useRef(0);
+  const expired = useRef(false);
 
-  useFrame(() => {
-    console.log(groupRef.current);
-    const velocity = new Vector3(
-      groupRef.current.position.x + angle.x * BULLET_SPEED+ BULLET_SPEED,
-      groupRef.current.position.y + angle.y * BULLET_SPEED+ BULLET_SPEED,
-      groupRef.current.position.z + angle.z * BULLET_SPEED+ + BULLET_SPEED
-    );
+  const expire = () => {
+    if (expired.current) {
+      return;
+    }
+    expired.current = true;
+    rigidbody.current?.setEnabled(false);
+    onExpire?.(id);
+  };
 
+  useFrame((_, delta) => {
+    if (!rigidbody.current || expired.current) {
+      return;
+    }
+    velocity.copy(directionVector).multiplyScalar(BULLET_SPEED);
     rigidbody.current.setLinvel(velocity, true);
+
+    lifetime.current += delta;
+    if (lifetime.current >= MAX_BULLET_LIFETIME) {
+      expire();
+      return;
+    }
+
+    const translation = rigidbody.current.translation();
+    currentPosition.set(translation.x, translation.y, translation.z);
+    if (currentPosition.distanceTo(startPosition) >= MAX_BULLET_DISTANCE) {
+      expire();
+    }
   });
 
   return (
-    <group
-      ref={groupRef}
-      position={[position.x, position.y, position.z]}
-      rotation={angle}
+    <RigidBody
+      ref={rigidbody}
+      gravityScale={0}
+      position={position}
+      rotation={rotation}
+      collisionGroups={bulletCollisionGroups}
+      colliders="cuboid"
+      onIntersectionEnter={(e) => {
+        const otherType = e.other.rigidBody?.userData?.type;
+        if (otherType === "asteroid") {
+          onHit?.(e.other.rigidBody?.userData?.id);
+          expire();
+        }
+      }}
+      sensor
+      userData={{
+        type: "bullet",
+        damage: 10,
+      }}
     >
-      <group position-x={0.5} position-y={0.5} position-z={0.5}>
-        <RigidBody
-          ref={rigidbody}
-          gravityScale={0}
-          onIntersectionEnter={(e) => {
-            if (e.other.rigidBody.userData?.type !== "bullet") {
-              rigidbody.current.setEnabled(false);
-              onHit(vec3(rigidbody.current.translation()));
-            }
-          }}
-          sensor
-          userData={{
-            type: "bullet",
-            damage: 10,
-          }}
-        >
-          <mesh material={bulletMaterial} castShadow>
-            <boxGeometry args={[0.05, 0.05, 0.5]} />
-          </mesh>
-        </RigidBody>
-      </group>
-    </group>
+      <mesh material={bulletMaterial} castShadow>
+        <boxGeometry args={[0.02, 0.02, 0.9]} />
+      </mesh>
+    </RigidBody>
   );
 };
 

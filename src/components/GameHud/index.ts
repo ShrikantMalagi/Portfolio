@@ -1,1 +1,1 @@
-export {default as Hud} from './GameHud';
+export { default as GameHud } from "./GameHud";

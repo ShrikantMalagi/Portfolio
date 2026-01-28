@@ -4,14 +4,109 @@ Command: npx gltfjsx@6.2.16 public/assets/models/Asterid_explodable.glb -o src/c
 */
 import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
+import { useEffect, useRef } from 'react'
+import { MathUtils, Vector3 } from 'three'
 
-export function AsteroidModel(props) {
+const DISINTEGRATE_DURATION = 1.2
+const DISINTEGRATE_DISTANCE = 1.6
+
+export function AsteroidModel({ destroyed = false, onDisintegrateComplete, ...props }) {
   const { nodes, materials } = useGLTF('/assets/models/asteroid_explodable.glb')
-  useFrame((_state,delta,_xFrame)=>{
-    console.log(delta);
+  const groupRef = useRef(null)
+  const progressRef = useRef(0)
+  const finishedRef = useRef(false)
+
+  useEffect(() => {
+    if (!destroyed || !groupRef.current) {
+      progressRef.current = 0
+      finishedRef.current = false
+      return
+    }
+
+    progressRef.current = 0
+    finishedRef.current = false
+
+    groupRef.current.traverse((child) => {
+      if (!child.isMesh) {
+        return
+      }
+
+      if (!child.userData.initialPosition) {
+        child.userData.initialPosition = child.position.clone()
+      } else {
+        child.position.copy(child.userData.initialPosition)
+      }
+
+      if (!child.userData.direction) {
+        child.userData.direction = new Vector3(
+          MathUtils.randFloatSpread(1),
+          MathUtils.randFloatSpread(1),
+          MathUtils.randFloatSpread(1)
+        ).normalize()
+      }
+
+      if (child.material && !child.userData.materialCloned) {
+        if (Array.isArray(child.material)) {
+          child.material = child.material.map((material) => {
+            const cloned = material.clone()
+            cloned.transparent = true
+            return cloned
+          })
+        } else {
+          child.material = child.material.clone()
+          child.material.transparent = true
+        }
+        child.userData.materialCloned = true
+      }
+    })
+  }, [destroyed])
+
+  useFrame((_state, delta) => {
+    if (!destroyed || !groupRef.current || finishedRef.current) {
+      return
+    }
+
+    progressRef.current = Math.min(
+      progressRef.current + delta / DISINTEGRATE_DURATION,
+      1
+    )
+
+    const progress = progressRef.current
+    groupRef.current.traverse((child) => {
+      if (!child.isMesh) {
+        return
+      }
+
+      const initialPosition = child.userData.initialPosition
+      const direction = child.userData.direction
+
+      if (initialPosition && direction) {
+        child.position
+          .copy(initialPosition)
+          .addScaledVector(direction, progress * DISINTEGRATE_DISTANCE)
+      }
+
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((material) => {
+            if (typeof material.opacity === 'number') {
+              material.opacity = 1 - progress
+            }
+          })
+        } else if (typeof child.material.opacity === 'number') {
+          child.material.opacity = 1 - progress
+        }
+      }
+    })
+
+    if (progress >= 1 && !finishedRef.current) {
+      finishedRef.current = true
+      onDisintegrateComplete?.()
+    }
   })
+
   return (
-    <group {...props} position={props.position} dispose={null} scale={0.5}>
+    <group ref={groupRef} {...props} dispose={null} scale={0.5}>
       <mesh name="origin" geometry={nodes.origin.geometry} material={materials.Asteroid} />
       <mesh name="Asteroid_Icosphere_cell" geometry={nodes.Asteroid_Icosphere_cell.geometry} material={materials.Asteroid} position={[0.264, 0.004, 0.566]} />
       <mesh name="Asteroid_Icosphere_cell001" geometry={nodes.Asteroid_Icosphere_cell001.geometry} material={materials.Asteroid} position={[0.289, -0.321, -0.492]} />

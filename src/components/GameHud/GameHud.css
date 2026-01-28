@@ -1,0 +1,103 @@
+.game-hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: #e4f0ff;
+  z-index: 10;
+}
+
+.game-hud__legend {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  padding: 12px 14px;
+  min-width: 180px;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 170, 255, 0.45);
+  background: rgba(6, 12, 22, 0.72);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.game-hud__title {
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.game-hud__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.game-hud__row span:first-child {
+  font-weight: 700;
+  color: #b8d7ff;
+}
+
+.game-hud__crosshair {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+}
+
+.game-hud__crosshair-line {
+  position: absolute;
+  width: 2px;
+  height: 14px;
+  background: rgba(226, 242, 255, 0.9);
+  box-shadow: 0 0 12px rgba(119, 198, 255, 0.55);
+}
+
+.game-hud__crosshair-line--top {
+  top: 0;
+}
+
+.game-hud__crosshair-line--bottom {
+  bottom: 0;
+}
+
+.game-hud__crosshair-line--left {
+  left: 0;
+  width: 14px;
+  height: 2px;
+}
+
+.game-hud__crosshair-line--right {
+  right: 0;
+  width: 14px;
+  height: 2px;
+}
+
+.game-hud__crosshair-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 12px rgba(119, 198, 255, 0.6);
+}
+
+.game-hud__crosshair-label {
+  position: absolute;
+  top: 58px;
+  font-size: 11px;
+  color: rgba(226, 242, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 640px) {
+  .game-hud__legend {
+    left: 12px;
+    bottom: 12px;
+    font-size: 11px;
+  }
+}

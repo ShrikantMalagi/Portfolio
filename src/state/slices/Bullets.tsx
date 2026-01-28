@@ -1,10 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Euler, Vector3 } from "three";
+
+export type Vec3 = [number, number, number];
 
 export interface IBullet {
   id: string;
-  position: Vector3;
-  angle: Euler;
+  position: Vec3;
+  direction: Vec3;
+  rotation: Vec3;
 }
 
 export const Bullets = createSlice({
@@ -15,9 +17,13 @@ export const Bullets = createSlice({
         const newBullet = action.payload;
       return [...state , newBullet];
     },
+    removeBullet: function (state, action) {
+      const bulletId = action.payload;
+      return state.filter((bullet) => bullet.id !== bulletId);
+    },
   },
 });
 
-export const {addBullet} = Bullets.actions;
+export const {addBullet, removeBullet} = Bullets.actions;
 
 export default Bullets.reducer;
